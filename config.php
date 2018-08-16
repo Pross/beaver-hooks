@@ -15,15 +15,15 @@ $config = array(
 $nav = array(
 	'bb-plugin' => array(
 		'name' => 'Beaver Builder',
-		'link' => 'https://hooks.wpbeaverbuilder.com/bb-plugin/',
+		'link' => '/bb-plugin/',
 	),
 	'bb-themer' => array(
 		'name' => 'Themer',
-		'link' => 'https://hooks.wpbeaverbuilder.com/bb-themer/',
+		'link' => '/bb-themer/',
 	),
 	'bb-theme' => array(
 		'name' => 'Theme',
-		'link' => 'https://hooks.wpbeaverbuilder.com/bb-theme',
+		'link' => '/bb-theme/',
 	),
 	'kb' => array(
 		'name' => 'Knowledge Base',

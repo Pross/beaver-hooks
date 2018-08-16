@@ -10,9 +10,10 @@ class Hooks {
 
 		$this->nav = $nav;
 		$this->config = $config;
+		$this->json = array();
 
 		if ( ! isset( $_GET['package'] ) ) {
-			header( 'Location: https://hooks.wpbeaverbuilder.com/bb-plugin/' );
+			header( 'Location: /bb-plugin/' );
 			exit();
 		}
 		// work out config
@@ -92,7 +93,7 @@ class Hooks {
 
 					$grep = $this->grep( $hook, $file );
 					$actions .= '<tr>';
-					$actions .= '<td data-title="Name">' . $hook . '</td>';
+					$actions .= '<td id="' . $hook . '" data-title="Name">' . $hook . '</td>';
 					$actions .= sprintf( '<td data-title="Location">%s<br /><em>Line: %s</em></td>',
 						ltrim( $file, './' ),
 						$grep['line']
@@ -124,7 +125,7 @@ class Hooks {
 					$actions .= sprintf( '<td data-title="Context"><code>%s</code>%s</td>', $action, $alt
 					);
 					$actions .= '</tr>';
-					//$action_count++;
+					$this->json['actions'][] = $hook;
 				}
 			}
 		}
@@ -187,7 +188,7 @@ class Hooks {
 
 					$grep = $this->grep( $hook, $file );
 					$actions .= '<tr>';
-					$actions .= '<td data-title="Name">' . $hook . '</td>';
+					$actions .= '<td id="' . $hook . '" data-title="Name">' . $hook . '</td>';
 					$actions .= sprintf( '<td data-title="Location">%s<br /><em>Line: %s</em></td>',
 						ltrim( $file, './' ),
 						$grep['line']
@@ -216,6 +217,7 @@ class Hooks {
 
 					$actions .= sprintf( '<td data-title="Context"><code>%s</code>%s</td>', $action, $alt );
 					$actions .= '</tr>';
+					$this->json['filters'][] = $hook;
 				}
 			}
 		}

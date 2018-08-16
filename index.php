@@ -3,16 +3,22 @@ include( 'hooks.php' );
 $hooks = new Hooks;
 $actions = $hooks->get_actions();
 $filters = $hooks->get_filters();
-
 if ( isset( $_GET['json'] ) ) {
 	header( 'Content-Type: application/json' );
+
 	$data = array(
-	'actions' => $hooks->actions,
-	'filters' => $hooks->filters,
+		'status' => true,
+		'error' => null,
+		'data' => array(
+			'all' => $hooks->json['actions'] + $hooks->json['filters'],
+			'actions' => $actions,
+			'filters' => $filters,
+		),
 	);
 	echo json_encode( $data );
 	die();
 }
+
 ?>
 <!DOCTYPE html>
 <html >
@@ -21,21 +27,40 @@ if ( isset( $_GET['json'] ) ) {
   <title>Beaver Hooks</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.js" type="text/javascript"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
-	<link rel="stylesheet" href="/css/style.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="/css/jquery.typeahead.min.css">
+	<link rel="stylesheet" href="/css/style.css?ver=0.1">
+	<script src="/js/jquery.typeahead.min.js"></script>
 </head>
 <body>
+
   <div class="menu">
 	<div class="left">
 	  <ul>
 		<?php
 		foreach ( $hooks->nav as $k => $nav_data ) {
-			printf( '<li><a href="%s">%s</a></li>', $nav_data['link'], $nav_data['name'] );
+			printf( '<li class="link"><a href="%s">%s</a></li>', $nav_data['link'], $nav_data['name'] );
 		}
 			?>
+			<form id="form-filters" name="form-filters">
+				<div class="typeahead__container">
+					<div class="typeahead__field">
+						<div class="typeahead__query">
+							<input class="js-typeahead-filters" name="filters[query]" type="search" placeholder="Search" autocomplete="off">
+						</div>
+					</div>
+				</div>
+			</form>
 	  </ul>
+
 		  </div>
+			
+
+			
 	  </div>
+
   <div id="demo">
+
   <h1><?php echo $hooks->package['name']; ?> Hooks & Filters</h1>
   <div class="table-responsive-vertical shadow-z-1">
   <table id="table" class="table table-hover table-mc">
@@ -57,6 +82,28 @@ if ( isset( $_GET['json'] ) ) {
 </div>
 </body>
 <a href="https://github.com/Pross/beaver-hooks" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-<script src="/js/index.js" type="text/javascript"></script>
+<script src="/js/index.js?ver=0.1" type="text/javascript"></script>
+<script>
+$.typeahead({
+	input: '.js-typeahead-filters',
+	order: "desc",
+	source: {
+		data: <?php echo json_encode( $hooks->json['actions'] + $hooks->json['filters'] ); ?>
+	},
+	callback: {
+		onInit: function (node) {
+			console.log('Typeahead Initiated on ' + node.selector);
+		},
+		onClickAfter: function (node, a, item, event) {
+ 
+			event.preventDefault;
+ 
+			// href key gets added inside item from options.href configuration
+			el = '#' + item.display
+			$(el).scrollTo()
+		 $('.js-typeahead-filters').val('')
+		}
+	}
+});
+</script>
 </html>

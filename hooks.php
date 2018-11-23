@@ -8,9 +8,9 @@ class Hooks {
 
 		include( 'config.php' );
 
-		$this->nav = $nav;
+		$this->nav    = $nav;
 		$this->config = $config;
-		$this->json = array();
+		$this->json   = array();
 
 		if ( ! isset( $_GET['package'] ) ) {
 			header( 'Location: /bb-plugin/' );
@@ -23,7 +23,7 @@ class Hooks {
 		}
 
 		$this->package = $this->config[ $package ];
-		$this->dir = 'repos/' . $package;
+		$this->dir     = 'repos/' . $package;
 
 		// populate $this->php with file contents to parse later.
 		$php = array();
@@ -42,7 +42,7 @@ class Hooks {
 	 */
 	function get_actions() {
 
-		$php = $this->php;
+		$php     = $this->php;
 		$actions = '';
 		foreach ( $php as $file => $data ) {
 
@@ -52,10 +52,11 @@ class Hooks {
 
 				foreach ( $out[1] as $hook ) {
 
-					$text = '';
-					$link = '';
+					$text    = '';
+					$link    = '';
 					$version = '';
-					$alt = '';
+					$alt     = '';
+					$params  = array();
 
 					foreach ( $tokens as $token ) {
 						if ( $token[0] == T_DOC_COMMENT ) {
@@ -71,12 +72,19 @@ class Hooks {
 
 						if ( preg_match( '#\@since\s([0-9a-z-\.]+)#', $text, $since ) ) {
 							$version = $since[1];
-							$text = str_replace( '* @since ' . $version , '', $text );
+							$text    = str_replace( '* @since ' . $version, '', $text );
 						}
 
 						if ( preg_match( '#\@link\s([0-9a-z-\.\:\/]+)#', $text, $match ) ) {
 							$link = $match[1];
-							$text = str_replace( '* @link ' . $link , '', $text );
+							$text = str_replace( '* @link ' . $link, '', $text );
+						}
+						if ( preg_match_all( '#@param\s([0-9a-zA-Z\$\s\.\,\-]+)#', $text, $matches ) ) {
+
+							foreach ( $matches[1] as $match ) {
+								$params[] = $match;
+								$text     = str_replace( '* @param ' . $match, '', $text );
+							}
 						}
 						$text = str_replace( '* @see ' . $hook, '', $text );
 
@@ -91,7 +99,7 @@ class Hooks {
 						$text = str_replace( '*', '<br />', $text );
 					}
 
-					$grep = $this->grep( $hook, $file );
+					$grep     = $this->grep( $hook, $file );
 					$actions .= '<tr>';
 					$actions .= '<td id="' . $hook . '" data-title="Name">' . $hook . '</td>';
 					$actions .= sprintf( '<td data-title="Location">%s<br /><em>Line: %s</em></td>',
@@ -110,6 +118,11 @@ class Hooks {
 						$alt .= $text;
 					}
 
+					if ( ! empty( $params ) ) {
+						$alt .= '<br /><br />Params:<br />';
+						$alt .= implode( '<br />', $params );
+					}
+
 					if ( $version ) {
 						$alt .= '<br />Since: ' . $version;
 					}
@@ -122,9 +135,9 @@ class Hooks {
 						$alt = sprintf( '<br /><br /><em>%s</em>', $alt );
 					}
 
-					$actions .= sprintf( '<td data-title="Context"><code>%s</code>%s</td>', $action, $alt
+					$actions                .= sprintf( '<td data-title="Context"><code>%s</code>%s</td>', $action, $alt
 					);
-					$actions .= '</tr>';
+					$actions                .= '</tr>';
 					$this->json['actions'][] = $hook;
 				}
 			}
@@ -137,7 +150,7 @@ class Hooks {
 	 */
 	function get_filters() {
 
-		$php = $this->php;
+		$php     = $this->php;
 		$actions = '';
 		foreach ( $php as $file => $data ) {
 
@@ -147,11 +160,12 @@ class Hooks {
 
 				foreach ( $out[1] as $hook ) {
 
-					$text = '';
-					$alt = '';
+					$text    = '';
+					$alt     = '';
 					$version = '';
-					$since = '';
-					$link = '';
+					$since   = '';
+					$link    = '';
+					$params  = array();
 					foreach ( $tokens as $token ) {
 						if ( $token[0] == T_DOC_COMMENT ) {
 							$check = sprintf( '#@see %s\s#', $hook );
@@ -165,12 +179,19 @@ class Hooks {
 
 						if ( preg_match( '#\@since\s([0-9a-z-\.]+)#', $text, $since ) ) {
 							$version = $since[1];
-							$text = str_replace( '* @since ' . $version , '', $text );
+							$text    = str_replace( '* @since ' . $version, '', $text );
 						}
 
 						if ( preg_match( '#\@link\s([0-9a-z-\.\:\/]+)#', $text, $match ) ) {
 							$link = $match[1];
-							$text = str_replace( '* @link ' . $link , '', $text );
+							$text = str_replace( '* @link ' . $link, '', $text );
+						}
+						if ( preg_match_all( '#@param\s([0-9a-zA-Z\$\s\.\,\-]+)#', $text, $matches ) ) {
+
+							foreach ( $matches[1] as $match ) {
+								$params[] = $match;
+								$text     = str_replace( '* @param ' . $match, '', $text );
+							}
 						}
 
 						$text = str_replace( '* @see ' . $hook, '', $text );
@@ -186,10 +207,10 @@ class Hooks {
 						$text = str_replace( '*', '<br />', $text );
 					}
 
-					$grep = $this->grep( $hook, $file );
-					$actions .= '<tr>';
-					$actions .= '<td id="' . $hook . '" data-title="Name">' . $hook . '</td>';
-					$actions .= sprintf( '<td data-title="Location">%s<br /><em>Line: %s</em></td>',
+					$grep                   = $this->grep( $hook, $file );
+					$actions               .= '<tr>';
+					$actions               .= '<td id="' . $hook . '" data-title="Name">' . $hook . '</td>';
+					$actions               .= sprintf( '<td data-title="Location">%s<br /><em>Line: %s</em></td>',
 						ltrim( $file, './' ),
 						$grep['line']
 					);
@@ -197,10 +218,15 @@ class Hooks {
 						'file' => ltrim( $file, './' ),
 						'line' => $grep['line'],
 					);
-					$action = htmlspecialchars( ltrim( $grep['text'] ) );
+					$action                 = htmlspecialchars( ltrim( $grep['text'] ) );
 
 					if ( $text ) {
 						$alt .= $text;
+					}
+
+					if ( ! empty( $params ) ) {
+						$alt .= '<br /><br />Params:<br />';
+						$alt .= implode( '<br />', $params );
 					}
 
 					if ( $version ) {
@@ -215,8 +241,8 @@ class Hooks {
 						$alt = sprintf( '<br /><br /><em>%s</em>', $alt );
 					}
 
-					$actions .= sprintf( '<td data-title="Context"><code>%s</code>%s</td>', $action, $alt );
-					$actions .= '</tr>';
+					$actions                .= sprintf( '<td data-title="Context"><code>%s</code>%s</td>', $action, $alt );
+					$actions                .= '</tr>';
 					$this->json['filters'][] = $hook;
 				}
 			}
@@ -229,9 +255,9 @@ class Hooks {
 	 */
 	function grep( $search, $file ) {
 
-		$lines = file( $file, FILE_IGNORE_NEW_LINES );
+		$lines      = file( $file, FILE_IGNORE_NEW_LINES );
 		$line_index = 0;
-		$bad_lines = '';
+		$bad_lines  = '';
 		foreach ( $lines as $this_line ) {
 
 			if ( ( stristr( $this_line, '"' . $search . '"' ) || stristr( $this_line, "'" . $search . "'" ) ) && ( stristr( $this_line, 'do_action' ) || stristr( $this_line, 'apply_filters' ) ) ) {
@@ -252,9 +278,9 @@ class Hooks {
 	 * get a list of all files in a folder.
 	 */
 	function listdir( $dir ) {
-		$files = array();
+		$files        = array();
 		$dir_iterator = new RecursiveDirectoryIterator( $dir );
-		$iterator = new RecursiveIteratorIterator( $dir_iterator, RecursiveIteratorIterator::SELF_FIRST );
+		$iterator     = new RecursiveIteratorIterator( $dir_iterator, RecursiveIteratorIterator::SELF_FIRST );
 
 		foreach ( $iterator as $file ) {
 			array_push( $files, $file->getPathname() );
